@@ -1,5 +1,7 @@
 // Compare 19Dec2023 vs 22Sep2023
 // Only load a few branches (event ID, jet pt, eta, phi)
+#define NEWMODE_A
+
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -77,13 +79,31 @@ void compareLite(string run="2023D") {
   TDirectory *curdir = gDirectory;
   setTDRStyle();
 
+  cout << endl << "Processing Run" << run << endl << flush;
+  cout <<         "======================" << endl << flush;
+
   // Book tree tA (19Dec2023)
   TChain *c_tA = new TChain("Events");
   cout << "A is 19Dec2023" << endl;
+  if (run=="2022CD") {
+    c_tA->AddFile("../data/l1tau/19Dec2023/JetHT_Run2022C-19Dec2023-v1_NANOAOD_taus.root");
+    c_tA->AddFile("../data/l1tau/19Dec2023/JetMET_Run2022C-19Dec2023-v1_NANOAOD_taus.root");
+    c_tA->AddFile("../data/l1tau/19Dec2023/JetMET_Run2022D-19Dec2023-v1_NANOAOD_taus.root");
+  }
+  if (run=="2022E") {
+    c_tA->AddFile("../data/l1tau/19Dec2023/JetMET_Run2022E-19Dec2023-v1_NANOAOD_taus.root");
+  }
+  if (run=="2022FG") {
+    c_tA->AddFile("../data/l1tau/19Dec2023/JetMET_Run2022F-19Dec2023-v2_NANOAOD_taus.root");
+    c_tA->AddFile("../data/l1tau/19Dec2023/JetMET_Run2022G-19Dec2023-v1_NANOAOD_taus.root"); //missing
+  }
+  // For 2023: _taus.root -> jets.root
   if (run=="2023Cv123")
-    c_tA->AddFile("../data/l1tau/19Dec2023/Run2023C_taus.root");
+    c_tA->AddFile("../data/l1tau/19Dec2023/Run2023C_jets.root");
+  if (run=="2023Cv4")
+    c_tA->AddFile("../data/l1tau/19Dec2023/Run2023C_jets.root");
   if (run=="2023D")
-    c_tA->AddFile("../data/l1tau/19Dec2023/Run2023D_taus.root");
+    c_tA->AddFile("../data/l1tau/19Dec2023/Run2023D_jets.root");
   
   // Set branches to sort events
   TBranch *b_run_tA, *b_lbn_tA, *b_evt_tA;
@@ -122,17 +142,39 @@ void compareLite(string run="2023D") {
 
   // Book TB tree (22Sep2023)
   TChain *c_tB = new TChain("Events");
-  //cout << "B is 22Sep2023" << endl;
-  cout << "B is Prompt23" << endl;
+  cout << "B is 22Sep2023" << endl;
+  //cout << "B is Prompt23" << endl;
+  if (run=="2022CD") {
+    c_tB->Add("../data/l1tau/22Sep2023/JetHT_Run2022C-22Sep2023-v1_NANOAOD_taus.root");
+    c_tB->Add("../data/l1tau/22Sep2023/JetMET_Run2022C-22Sep2023-v1_NANOAOD_taus.root");
+    c_tB->Add("../data/l1tau/22Sep2023/JetMET_Run2022D-22Sep2023-v1_NANOAOD_taus.root");
+  }
+  if (run=="2022E") {
+    c_tB->Add("../data/l1tau/22Sep2023/JetMET_Run2022E-22Sep2023-v1_NANOAOD_taus.root");
+  }
+  if (run=="2022FG") {
+    c_tB->Add("../data/l1tau/22Sep2023/JetMET_Run2022F-22Sep2023-v2_NANOAOD_taus.root");
+    c_tB->Add("../data/l1tau/22Sep2023/JetMET_Run2022G-22Sep2023-v1_NANOAOD_taus.root");
+  }
   if (run=="2023Cv123") {
-    c_tB->Add("../data/l1tau/Summer22Prompt23/Run2023C-PromptNanoAODv11p9_v1-v1_NANOAOD_taus.root");
-    c_tB->Add("../data/l1tau/Summer22Prompt23/Run2023C-PromptNanoAODv12_v2-v2_NANOAOD_taus.root");
-    c_tB->Add("../data/l1tau/Summer22Prompt23/Run2023C-PromptNanoAODv12_v2-v4_NANOAOD_taus.root");
-    c_tB->AddFile("../data/l1tau/Summer22Prompt23/Run2023C-PromptNanoAODv12_v3-v1_NANOAOD_taus.root");
+    //c_tB->Add("../data/l1tau/Summer22Prompt23/Run2023C-PromptNanoAODv11p9_v1-v1_NANOAOD_taus.root");
+    //c_tB->Add("../data/l1tau/Summer22Prompt23/Run2023C-PromptNanoAODv12_v2-v2_NANOAOD_taus.root");
+    //c_tB->Add("../data/l1tau/Summer22Prompt23/Run2023C-PromptNanoAODv12_v2-v4_NANOAOD_taus.root");
+    //c_tB->AddFile("../data/l1tau/Summer22Prompt23/Run2023C-PromptNanoAODv12_v3-v1_NANOAOD_taus.root");
+    //c_tB->Add("../data/l1tau/22Sep2023/skim_2023Cv123_22Sep2023.root");
+    c_tB->Add("../data/l1tau/22Sep2023/Run2023Cv123_jets.root");
+  }
+  if (run=="2023Cv4") {
+    //c_tB->Add("../data/l1tau/22Sep2023/skim_2023Cv4_22Sep2023.root");
+    c_tB->Add("../data/l1tau/22Sep2023/Run2023Cv4_jets.root");
   }
   if (run=="2023D") {
-    c_tB->AddFile("../data/l1tau/Summer22Prompt23/Run2023D-PromptReco-v1_NANOAOD_taus.root");
-    c_tB->AddFile("../data/l1tau/Summer22Prompt23/Run2023D-PromptReco-v2_NANOAOD_taus.root");
+    //c_tB->AddFile("../data/l1tau/Summer22Prompt23/Run2023D-PromptReco-v1_NANOAOD_taus.root");
+    //c_tB->AddFile("../data/l1tau/Summer22Prompt23/Run2023D-PromptReco-v2_NANOAOD_taus.root");
+    //c_tB->Add("../data/l1tau/22Sep2023/skim_2023D_v1_22Sep2023.root");
+    //c_tB->Add("../data/l1tau/22Sep2023/skim_2023D_v2_22Sep2023.root");
+    c_tB->Add("../data/l1tau/22Sep2023/Run2023D_v1_jets.root");
+    c_tB->Add("../data/l1tau/22Sep2023/Run2023D_v2_jets.root");
   }
 
   // Set branches to sort events
@@ -222,14 +264,36 @@ void compareLite(string run="2023D") {
   //Int_t npv_tA(0), npv_tB(0);
   //
   const int njt = 100;
-  //Float_t jtpt_tA[njt], jtpt_tB[njt];
+  //Float_t jtpt_tA[njt], jtpt_tB[njt]; // JEC redone
   vector<float> *jtpt_tA, *jtpt_tB;
-  Float_t jteta_tA[njt], jteta_tB[njt];
-  Float_t jtphi_tA[njt], jtphi_tB[njt];
-  UChar_t jtidtight_tA[njt], jtidtight_tB[njt];
+#ifdef NEWMODE_A
+  cout << "Running in NEWMODE_A" << endl << flush;
+  vector<float> *jteta_tA;
+  vector<float> *jtphi_tA;
+  vector<float> *jtidtight_tA;
+#else
+  cout << "Not running in NEWMODE_A" << endl << flush;
+  Float_t jteta_tA[njt];//, jteta_tB[njt]; // Prompt23
+  Float_t jtphi_tA[njt];//, jtphi_tB[njt]; // Prompt23
+  UChar_t jtidtight_tA[njt];//, jtidtight_tB[njt]; // Prompt23
+#endif
+  vector<float> *jteta_tB; // 22Sep
+  vector<float> *jtphi_tB; // 22Sep
+  vector<float> *jtidtight_tB; // 22Sep
   //Float_t jtjes_tA[njt], jtjes_tB[njt];
   vector<float> *jtjes_tA, *jtjes_tB;
 
+
+#ifdef NEWMODE_A
+  jteta_tA = 0; jtphi_tA = 0; jtidtight_tA = 0; // Avoid crash in GetEntry
+  c_tA->SetBranchAddress("Jet_eta",&jteta_tA,&b_jteta_tA);
+  c_tA->SetBranchAddress("Jet_phi",&jtphi_tA,&b_jtphi_tA);
+  c_tA->SetBranchAddress("Jet_jetId",&jtidtight_tA,&b_jtidtight_tA);
+#else
+  c_tA->SetBranchAddress("Jet_phi",jtphi_tA,&b_jtphi_tA);
+  c_tA->SetBranchAddress("Jet_eta",jteta_tA,&b_jteta_tA);
+  c_tA->SetBranchAddress("Jet_jetId",jtidtight_tA,&b_jtidtight_tA);
+#endif
 
   c_tA->SetBranchAddress("Flag_Run3",&flag_tA,&b_flag_tA);
   c_tB->SetBranchAddress("Flag_Run3",&flag_tB,&b_flag_tB);
@@ -240,17 +304,21 @@ void compareLite(string run="2023D") {
   c_tB->SetBranchAddress("nJet",&njt_tB,&b_njt_tB);
   jtpt_tA = 0, jtpt_tB = 0; // Avoid crash in GetEntry
   c_tA->SetBranchAddress("Jet_pt",&jtpt_tA,&b_jtpt_tA);
-  c_tB->SetBranchAddress("Jet_pt",&jtpt_tB,&b_jtpt_tB);
-  c_tA->SetBranchAddress("Jet_eta",jteta_tA,&b_jteta_tA);
-  c_tB->SetBranchAddress("Jet_eta",jteta_tB,&b_jteta_tB);
-  c_tA->SetBranchAddress("Jet_phi",jtphi_tA,&b_jtphi_tA);
-  c_tB->SetBranchAddress("Jet_phi",jtphi_tB,&b_jtphi_tB);
-  c_tA->SetBranchAddress("Jet_jetId",jtidtight_tA,&b_jtidtight_tA);
-  c_tB->SetBranchAddress("Jet_jetId",jtidtight_tB,&b_jtidtight_tB);
+  c_tB->SetBranchAddress("Jet_pt",&jtpt_tB,&b_jtpt_tB); // Prompt23
+  jteta_tB = 0; // Avoid crash in GetEntry
+  //c_tB->SetBranchAddress("Jet_eta",jteta_tB,&b_jteta_tB); // Promp23
+  c_tB->SetBranchAddress("Jet_eta",&jteta_tB,&b_jteta_tB); // 22Sep
+  //c_tB->SetBranchAddress("Jet_phi",jtphi_tB,&b_jtphi_tB); // Prompt23
+  jtphi_tB = 0; // Avoid crash in GetEntry
+  c_tB->SetBranchAddress("Jet_phi",&jtphi_tB,&b_jtphi_tB); // Prompt23
+  //c_tB->SetBranchAddress("Jet_jetId",jtidtight_tB,&b_jtidtight_tB);// Prompt23
+  jtidtight_tB = 0; // Avoid crash in GetEntry
+  c_tB->SetBranchAddress("Jet_jetId",&jtidtight_tB,&b_jtidtight_tB);// 22Sep
   jtjes_tA = 0, jtjes_tB = 0; // Avoid crash in GetEntry
   c_tA->SetBranchAddress("Jet_rawFactor",&jtjes_tA,&b_jtjes_tA);
   c_tB->SetBranchAddress("Jet_rawFactor",&jtjes_tB,&b_jtjes_tB);
 
+  
   const int nsample = 1;//100; // 0.5h
   const float frac = 1;//0.1;//0.01;
   cout << "Pairing TA and TB" << endl << flush;
@@ -322,6 +390,8 @@ void compareLite(string run="2023D") {
 			 "0.5*(p_{T,B}-p_{T,A})/p_{T,tag}",nx,vx,600,-3,3);
   
   // Direct match method in two variants
+  TProfile *pjesa_dm = new TProfile("pjesa_dm",";p_{T,A};JES(A)",nx,vx);
+  TProfile *pjesb_dm = new TProfile("pjesb_dm",";p_{T,B};JES(B)",nx,vx);
   TProfile *pta_dm = new TProfile("pta_dm",";p_{T,A};p_{T,A}",nx,vx);
   TProfile *pa_dm = new TProfile("pa_dm",";p_{T,A};p_{T,B}/p_{T,A}",nx,vx);
   TProfile *ptb_dm = new TProfile("ptb_dm",";p_{T,B};p_{T,A}",nx,vx);
@@ -374,28 +444,48 @@ void compareLite(string run="2023D") {
     Long64_t ientrytB = c_tB->LoadTree(jentrytB);
     if (ientrytA < 0) break;
     c_tB->GetEntry(jentrytB);
-    
+
+    // Fix for 22Sep
+    njt_tA = (*jtpt_tA).size();
+    njt_tB = (*jtpt_tB).size();
     
     // Loop over two leading jets to find probe pairs
     for (int i = 0; i != min(2,int(njt_tA)); ++i) {
       
       double pt = (*jtpt_tA)[i];
+      double jes = (1-(*jtjes_tA)[i]);
+#ifdef NEWMODE_A
+      double eta = (*jteta_tA)[i];
+      double phi = (*jtphi_tA)[i];
+      bool idA = ((*jtidtight_tA)[i]>=4);
+#else
       double eta = jteta_tA[i];
       double phi = jtphi_tA[i];
-      double jes = (1-(*jtjes_tA)[i]);
-      
+      bool idA = (jtidtight_tA[i]>=4);
+#endif
+
       bool hasmatch = false;
       for (int j = 0; j != min(2,int(njt_tB)) && !hasmatch; ++j) {
 	
 	double ptB = (*jtpt_tB)[j];
-	double etaB = jteta_tB[j];
-	double phiB = jtphi_tB[j];
 	double jesB = (1-(*jtjes_tB)[j]);
+	//double etaB = jteta_tB[j]; // Prompt23
+	double etaB = (*jteta_tB)[j]; // 22Sep
+	//double phiB = jtphi_tB[j]; // Prompt23
+	double phiB = (*jtphi_tB)[j]; // 22Sep
+	//bool idB = (jtidtight_tB[j]>=4); // Prompt23
+	bool idB = ((*jtidtight_tB)[j]>=4); // 22Sep
 	
 	// Match probe jets with deltaR<R/cone2
 	double dr = tools::oplus(delta_eta(eta,etaB),delta_phi(phi,phiB));
 	if (dr < 0.20) {
-	  
+
+	  // Patch 2023Cv4 JEC for 19Dec(A)
+	  if (run=="2023Cv4") {
+	    pt *= jes / jesB;
+	    jes = jesB;
+	  }
+      	  
 	  hasmatch = true;
 	  double ptave = 0.5 * (ptB + pt);
 
@@ -409,15 +499,25 @@ void compareLite(string run="2023D") {
 	    int l = (j==0 ? 1 : 0);
 	    
 	    double pttagA = (*jtpt_tA)[k];
+	    if (run=="2023Cv4") { // Patch 2023Cv4 JEC for 19Dec(A)
+	      pttagA *= (*jtjes_tA)[k]/(*jtjes_tB)[l];
+	    }
 	    double pttagB = (*jtpt_tB)[l];
 	    pttag = 0.5 * (pttagA+pttagB);
-	    
-	    double etaTA = jtphi_tA[k];
-	    double etaTB = jtphi_tB[l];
+
+#ifdef NEWMODE_A
+	    double phiTA = (*jtphi_tA)[k];
+	    double etaTA = (*jteta_tA)[k];
+#else
+	    double phiTA = jtphi_tA[k];
+	    double etaTA = jteta_tA[k];
+#endif
+	    //double etaTB = jteta_tB[l]; // Prompt23
+	    double etaTB = (*jteta_tB)[l]; // 22Sep
 	    double etatag = 0.5*(etaTA + etaTB);
 
-	    double phiTA = jtphi_tA[k];
-	    double phiTB = jtphi_tB[l];
+	    //double phiTB = jtphi_tB[l]; // Prompt23
+	    double phiTB = (*jtphi_tB)[l]; // 22Sep
 	    double dphiTA = delta_phi(phiTA,phi);
 	    double dphiTB = delta_phi(phiTB,phiB);
 	    double dphitag = 0.5*(dphiTA + dphiTB);
@@ -434,7 +534,8 @@ void compareLite(string run="2023D") {
 
 	  // Look at good probe jets in barrel in good events
 	  if (fabs(eta)<1.3 && fabs(etaB)<1.3 &&
-	      jtidtight_tA[i]>=4 && jtidtight_tB[j]>=4 &&
+	      //jtidtight_tA[i]>=4 && jtidtight_tB[j]>=4 &&
+	      idA && idB &&
 	      flag_tA && flag_tB &&
 	      pt > 0.5*ptB && ptB > 0.5*pt
 	    //dr < 0.10) {
@@ -453,13 +554,16 @@ void compareLite(string run="2023D") {
 	    } //istp
 
 	    // Direct matching method
+	    pjesa_dm->Fill(pt, jes);
+	    pjesb_dm->Fill(ptB, jesB);
+	    
 	    pta_dm->Fill(pt, pt);
 	    pa_dm->Fill(pt, ptB / pt);
 	    ptb_dm->Fill(ptB, pt);
 	    pb_dm->Fill(ptB, pt / ptB);
 	    ptd_dm->Fill(ptave, pt);
 	    pd_dm->Fill(ptave, 0.5*(ptB-pt) / ptave);
-	    
+
 	    h2a_dm->Fill(pt, ptB / pt);
 	    h2b_dm->Fill(ptB, pt / ptB);
 	    h2d_dm->Fill(ptave, 0.5*(ptB-pt) / ptave);
