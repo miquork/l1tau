@@ -11,7 +11,6 @@
 //#include "ROOT/RVec.hxx"
 #include "c++/v1/vector"
 
-
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH3D.h"
@@ -33,9 +32,12 @@
 #include "../tdrstyle_mod22.C"
 
 #include <iostream>
+#include <map>
 
 using namespace std;
 using namespace tools;
+
+bool patchJESA = true;
 
 class evtid {
 private:
@@ -56,6 +58,7 @@ public :
   ULong64_t evt() const { return evt_; }
 };
 
+/*
 int nparl1_ = 9;
 Double_t funcL1(Double_t *x, Double_t *p) {
 
@@ -73,6 +76,55 @@ Double_t funcL1(Double_t *x, Double_t *p) {
 
   return val;
 }
+*/
+std::map<int, std::map<int, int> > _json;
+bool LoadJSON(string json) {
+  cout << "Processing LoadJSON() with " + json << endl << flush;
+  ifstream file(json, ios::in);
+  if (!file.is_open()) { assert(false); return false; }
+  char c;
+  string s, s2, s3;
+  char s1[256];
+  int rn(0), ls1(0), ls2(0), nrun(0), nls(0);
+  file.get(c);
+  if (c!='{') return false;
+  while (file >> s and sscanf(s.c_str(),"\"%d\":",&rn)==1) {
+    //if (_gh_debug) PrintInfo(Form("\"%d\": ",rn),true);
+
+    while (file.get(c) and c==' ') {};
+    //if (_gh_debug) { PrintInfo(Form("%c",c),true); assert(c=='['); }
+    ++nrun;
+
+    bool endrun = false;
+    while (!endrun and file >> s >> s2 and (sscanf((s+s2).c_str(),"[%d,%d]%s",&ls1,&ls2,s1)==3 or (file >> s3 and sscanf((s+s2+s3).c_str(),"[%d,%d]%s",&ls1,&ls2,s1)==3))) {
+
+      s2 = s1;
+      if (s2=="]") { file >> s3; s2 += s3; }
+
+      //if (_gh_debug) PrintInfo(Form("[%d,%d,'%s']",ls1,ls2,s1),true);
+
+      for (int ls = ls1; ls != ls2+1; ++ls) {
+        _json[rn][ls] = 1;
+        ++nls;
+      }
+
+      endrun = (s2=="]," || s2=="]}");
+      //if (_gh_debug and !endrun and s2!=",") { PrintInfo(string("s1: ")+s2,true); assert(s2==","); }
+    } // while ls
+    //if (_gh_debug) PrintInfo("",true);
+
+    if (s2=="]}") continue;
+    //else if (_gh_debug and s2!="],") PrintInfo(string("s2: ")+s2,true);
+    assert(s2=="],");
+  } // while run
+  //if (s2!="]}") { PrintInfo(string("s3: ")+s2,true); return false; }
+  if (s2!="]}") { return false; }
+
+  cout << "Called LoadJSON() with " << json << endl;
+  cout << Form("Loaded %d good runs and %d good lumi sections\n",nrun,nls);
+  return true;
+} // LoadJSON
+
 
 void compareLite(string run="2023D") {
 
@@ -83,27 +135,44 @@ void compareLite(string run="2023D") {
   cout <<         "======================" << endl << flush;
 
   // Book tree tA (19Dec2023)
+  // Also set JSON filter and jesAfix
+  double jesAfix(1.);
   TChain *c_tA = new TChain("Events");
   cout << "A is 19Dec2023" << endl;
   if (run=="2022CD") {
     c_tA->AddFile("../data/l1tau/19Dec2023/JetHT_Run2022C-19Dec2023-v1_NANOAOD_taus.root");
     c_tA->AddFile("../data/l1tau/19Dec2023/JetMET_Run2022C-19Dec2023-v1_NANOAOD_taus.root");
     c_tA->AddFile("../data/l1tau/19Dec2023/JetMET_Run2022D-19Dec2023-v1_NANOAOD_taus.root");
+    LoadJSON("files/Cert_Collisions2022_355100_362760_Golden.json");
+    jesAfix = 1.027;
   }
   if (run=="2022E") {
     c_tA->AddFile("../data/l1tau/19Dec2023/JetMET_Run2022E-19Dec2023-v1_NANOAOD_taus.root");
+    LoadJSON("files/Cert_Collisions2022_355100_362760_Golden.json");
+    jesAfix = 1.000;
   }
   if (run=="2022FG") {
     c_tA->AddFile("../data/l1tau/19Dec2023/JetMET_Run2022F-19Dec2023-v2_NANOAOD_taus.root");
     c_tA->AddFile("../data/l1tau/19Dec2023/JetMET_Run2022G-19Dec2023-v1_NANOAOD_taus.root"); //missing
+    LoadJSON("files/Cert_Collisions2022_355100_362760_Golden.json");
+    jesAfix = 1.062;
   }
   // For 2023: _taus.root -> jets.root
-  if (run=="2023Cv123")
+  if (run=="2023Cv123") {
     c_tA->AddFile("../data/l1tau/19Dec2023/Run2023C_jets.root");
-  if (run=="2023Cv4")
+    LoadJSON("files/Cert_Collisions2023_366442_370790_Golden.json");
+    jesAfix = 1.060;
+  }
+  if (run=="2023Cv4") {
     c_tA->AddFile("../data/l1tau/19Dec2023/Run2023C_jets.root");
-  if (run=="2023D")
+    LoadJSON("files/Cert_Collisions2023_366442_370790_Golden.json");
+    jesAfix = 1.005;
+  }
+  if (run=="2023D") {
     c_tA->AddFile("../data/l1tau/19Dec2023/Run2023D_jets.root");
+    LoadJSON("files/Cert_Collisions2023_366442_370790_Golden.json");
+    jesAfix = 0.997;
+  }
   
   // Set branches to sort events
   TBranch *b_run_tA, *b_lbn_tA, *b_evt_tA;
@@ -411,8 +480,9 @@ void compareLite(string run="2023D") {
   t.Start();
 
   int nev = 0;
+  int ngood = 0;
   int nmatch = 0;
-  int nj = 0;
+  //int nj = 0;
   for (map<Long64_t,Long64_t>::const_iterator it = mAtoB.begin();
        it != mAtoB.end(); ++it) {
 
@@ -430,8 +500,6 @@ void compareLite(string run="2023D") {
       t.Continue();
     }
 
-    ++nmatch;
-    
     // Load matching entries
     Long64_t jentrytA = it->first;
     Long64_t jentrytB = it->second;
@@ -448,12 +516,19 @@ void compareLite(string run="2023D") {
     // Fix for 22Sep
     njt_tA = (*jtpt_tA).size();
     njt_tB = (*jtpt_tB).size();
+
+    // Does the run/LS pass the latest JSON selection?
+    if (_json[run_tA][lbn_tA]==0) {
+      continue;
+    }
+    else
+      ++ngood;
     
     // Loop over two leading jets to find probe pairs
     for (int i = 0; i != min(2,int(njt_tA)); ++i) {
       
-      double pt = (*jtpt_tA)[i];
-      double jes = (1-(*jtjes_tA)[i]);
+      double pt = (*jtpt_tA)[i] * jesAfix;
+      double jes = (1-(*jtjes_tA)[i]) * jesAfix;
 #ifdef NEWMODE_A
       double eta = (*jteta_tA)[i];
       double phi = (*jtphi_tA)[i];
@@ -485,7 +560,8 @@ void compareLite(string run="2023D") {
 	    pt *= jes / jesB;
 	    jes = jesB;
 	  }
-      	  
+	  
+	  ++nmatch;
 	  hasmatch = true;
 	  double ptave = 0.5 * (ptB + pt);
 
@@ -498,7 +574,7 @@ void compareLite(string run="2023D") {
 	    int k = (i==0 ? 1 : 0);
 	    int l = (j==0 ? 1 : 0);
 	    
-	    double pttagA = (*jtpt_tA)[k];
+	    double pttagA = (*jtpt_tA)[k] * jesAfix;
 	    if (run=="2023Cv4") { // Patch 2023Cv4 JEC for 19Dec(A)
 	      pttagA *= (*jtjes_tA)[k]/(*jtjes_tB)[l];
 	    }
@@ -521,9 +597,11 @@ void compareLite(string run="2023D") {
 	    double dphiTA = delta_phi(phiTA,phi);
 	    double dphiTB = delta_phi(phiTB,phiB);
 	    double dphitag = 0.5*(dphiTA + dphiTB);
-	    
-	    double alphaTA = (njt_tA>2 ? (*jtpt_tA)[2]/pttagA : 0);
-	    double alphaTB = (njt_tB>2 ? (*jtpt_tB)[2]/pttagB : 0);
+
+	    double pt3A = (njt_tA>2 ? (*jtpt_tA)[2] * jesAfix : 0);
+	    double pt3B = (njt_tB>2 ? (*jtpt_tB)[2] : 0);
+	    double alphaTA = pt3A / pttagA;
+	    double alphaTB = pt3B / pttagB;
 	    double alphatag = (alphaTA>0 && alphaTB>0 ?
 			       0.5*(alphaTA+alphaTB) : max(alphaTA,alphaTB));
 	    
@@ -572,8 +650,10 @@ void compareLite(string run="2023D") {
       } // for j
     } // for i
   } // for events
-  cout << endl << "Found " << nmatch << " matching events"// << endl;
-       << " of which " << nj << " had same number of jets" << endl;
+  cout << endl << "Found " << nev << " matching events"// << endl;
+    //<< " of which " << nj << " had same number of jets" << endl;
+       << " of which " << ngood << " passed JSON selection" << endl;
+  cout << "Found " << nmatch << " matching jets in these events" << endl;
     
   cout << "Output stored to " << f->GetName() << endl;
   f->Write();

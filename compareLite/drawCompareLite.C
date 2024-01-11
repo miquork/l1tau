@@ -93,10 +93,17 @@ void drawCompareLite(string run = "2023D") {
   double xmax = 4000;//3500;
 
   // Background canvas
-  TH1D *h = tdrHist("h","#LTp_{T}(B)#GT / #LTp_{T}(A)#GT", 0.98,1.13,
+  TH1D *h = tdrHist("h","#LTp_{T}(B)#GT / #LTp_{T}(A)#GT", 0.92,1.07,
 		    "#LTp_{T}(A)#GT (GeV)",xmin,xmax);
-  if (run=="2023Cv123") {}
-  if (run=="2023D") { h->GetYaxis()->SetRangeUser(0.92,1.07); }
+  if (false) { // without patchJESA
+    if (run=="2022CD")  { h->GetYaxis()->SetRangeUser(0.92,1.07); }
+    if (run=="2022E")   { h->GetYaxis()->SetRangeUser(0.92,1.07); }
+    if (run=="2023FG")    { h->GetYaxis()->SetRangeUser(0.98,1.13); }
+    if (run=="2023Cv123") { h->GetYaxis()->SetRangeUser(0.98,1.13); }
+    if (run=="2023Cv4") { h->GetYaxis()->SetRangeUser(0.92,1.07); }
+    if (run=="2023D")   { h->GetYaxis()->SetRangeUser(0.92,1.07); }
+    if (run=="Run3")    { h->GetYaxis()->SetRangeUser(0.92,1.07); }
+  }
   
   lumi_136TeV = run.c_str();//"2023Cv123";
   extraText = "Private";
@@ -144,6 +151,7 @@ void drawCompareLite(string run = "2023D") {
   //TF1 *f1 = new TF1("f1","[0]+[1]*x/3000.",600,3000.);
   TF1 *f1 = new TF1("f1","[0]+[1]*0.01*(-0.798-0.5798*pow(x/396.1,1.412)/(1+pow(x/396.1,1.412))*(1-pow(x/396.1,-1.412)))+[2]*-0.1*x/3000.",600,3300);
   f1->SetParameters(1,1,1);
+  if (run=="Run3") f1->SetRange(600,4000);
   
   TMultiGraph *mg = new TMultiGraph();
   mg->Add(g);
@@ -164,5 +172,130 @@ void drawCompareLite(string run = "2023D") {
 
   c1->SaveAs(Form("pdf/drawCompareLite_%s_vs_%s_TnP_%s.pdf",cB,cA,crun));
 } // drawTnP
-  
 
+
+void drawCompareLiteIOVs() {
+
+  setTDRStyle();
+  TDirectory *curdir = gDirectory;
+
+  string sA = "19Dec2023";
+  string sB = "Prompt23";//"22Sep";
+  const char *cA = sA.c_str();
+  const char *cB = sB.c_str();
+  
+  double xmin = 600;
+  double xmax = 4000;//3500;
+
+  TFile *f2 = new TFile("compareLite/HB_SiPM_down_1M.root","READ"); // hbsipm
+  assert(f2 && !f2->IsZombie());
+  TH1D *h2 = (TH1D*)f2->Get("RjetPuppi_sipmNonlinDn"); assert(h2);
+
+  // Add +1.5%
+  TH1D *h2p = (TH1D*)h2->Clone("h2p");
+  for (int i = 1; i != h2p->GetNbinsX()+1; ++i) {
+    if (h2p->GetBinContent(i)!=0)
+      h2p->SetBinContent(i, h2->GetBinContent(i)+0.015);
+  }
+
+  // Fit function from jecsys3/globalFitSettings.h (+1.5%)
+  // Run3 wrong SiPM non-linearity corrections for data (1M variant)
+  // {"hbsipm","Rjet","-17.81+log(x)*(15.9+log(x)*(-4.719+log(x)*(0.3464+log(x)*(0.08054+log(x)*(-0.01553+log(x)*0.0007183)))))"},
+  TF1 *f1s = new TF1("f1s","1.015 + 0.01*(-17.81+log(x)*(15.9+log(x)*(-4.719+log(x)*(0.3464+log(x)*(0.08054+log(x)*(-0.01553+log(x)*0.0007183))))))",600,4000);
+  
+  // Background canvas
+  TH1D *h = tdrHist("h","#LTp_{T}(B)#GT / #LTp_{T}(A)#GT", 0.92,1.07,
+		    "#LTp_{T}(A)#GT (GeV)",xmin,xmax);
+  
+  lumi_136TeV = "Run3 ";
+  extraText = "Private";
+  TCanvas *c1 = tdrCanvas("c1",h,8,11,kSquare);
+
+  TLine *l = new TLine();
+  l->SetLineStyle(kDashed);
+  l->SetLineColor(kGray+1);
+  l->DrawLine(xmin,1,xmax,1);
+
+  TLatex *t = new TLatex(); t->SetNDC(); t->SetTextSize(0.045);
+  t->DrawLatex(0.19,0.75,"|#eta| < 1.3");
+  t->DrawLatex(0.19,0.30,Form("B: %s",cB));
+  t->DrawLatex(0.19,0.25,Form("A: %s",cA));
+  t->DrawLatex(0.19,0.20,"Direct match vs (A+B)/2");
+
+  string viov[] = {"2022CD", "2022E", "2022FG",
+		   "2023Cv123", "2023Cv4", "2023D", "Run3"};
+  const int niov = sizeof(viov)/sizeof(viov[0]);
+
+  map<string, int> marker;
+  marker["2022CD"] = kOpenSquare;
+  marker["2022E"] = kOpenSquare;
+  marker["2022FG"] = kOpenSquare;
+  marker["2023Cv123"] = kOpenCircle;
+  marker["2023Cv4"] = kOpenCircle;
+  marker["2023D"] = kOpenCircle;
+  marker["Run3"] = kFullDiamond;
+
+  map<string, int> color;
+  color["2022CD"] = kGreen+2;
+  color["2022E"] = kCyan+2;
+  color["2022FG"] = kRed;
+  color["2023Cv123"] = kOrange+2;
+  color["2023Cv4"] = kBlue;
+  color["2023D"] = kMagenta+2;
+  color["Run3"] = kBlack;
+
+  map<string, const char*> legend;
+  legend["2022CD"] = "2022CD + 2.7%";
+  legend["2022E"] = "2022E";
+  legend["2022FG"] = "2022FG + 6.2%";
+  legend["2023Cv123"] = "2023Cv123 + 6.0%";
+  legend["2023Cv4"] = "2023Cv4 + 0.5%";
+  legend["2023D"] = "2023D - 0.3%";
+  legend["Run3"] = "Run3";
+  
+  TLegend *leg = tdrLeg(0.40,0.90-0.042*(niov+1),0.65,0.90);
+  //leg->SetTextSize(0.035);
+  
+  tdrDraw(h2p,"Pz",kFullCircle,kGreen+2);
+  f1s->SetLineColor(kGreen+2);
+  f1s->SetLineWidth(2);
+  f1s->Draw("SAME");
+  leg->AddEntry(h2p,"MC prediction + 1.5%","PLE");
+  h2p->SetLineWidth(2);
+  
+  // Draw direcct match results
+  TGraphErrors *grun3(0);
+  for (int iov = 0; iov != niov; ++iov) {
+
+    string run = viov[iov];
+    const char *crun = run.c_str();
+    TFile *f = new TFile(Form("compareLite/compareLite_%s.root",crun),"READ");
+    assert(f && !f->IsZombie());
+
+    // Direct match
+    TProfile *ptd_dm = (TProfile*)f->Get("ptd_dm"); assert(ptd_dm);
+    TProfile *pd_dm = (TProfile*)f->Get("pd_dm"); assert(pd_dm);
+    TGraphErrors *g = directaverage(ptd_dm,pd_dm);
+  
+    tdrDraw(g,"Pz",marker[crun],color[crun]);
+    leg->AddEntry(g, legend[crun], "PLE");
+    
+    if (run=="Run3") {
+      grun3 = g;
+      g->SetLineWidth(2);
+    }
+  }
+  
+  // SPRH -3% variation
+  TF1 *f1 = new TF1("f1","[0]+[1]*0.01*(-0.798-0.5798*pow(x/396.1,1.412)/(1+pow(x/396.1,1.412))*(1-pow(x/396.1,-1.412)))+[2]*-0.1*x/3000.",600,3300);
+  f1->SetParameters(1,1,1);
+  f1->SetRange(600,4000);
+  
+  f1->SetLineColor(kBlack);
+  f1->SetLineWidth(2);
+  f1->SetParameters(1.08,-0.05);
+  grun3->Fit(f1,"RN");
+  f1->Draw("SAME");
+
+  c1->SaveAs(Form("pdf/drawCompareLite_%s_vs_%s_IOVs.pdf",cB,cA));
+}

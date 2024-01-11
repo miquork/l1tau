@@ -25,4 +25,10 @@
   drawCompareLite("2023Cv123");
   drawCompareLite("2023Cv4");
   drawCompareLite("2023D");
+
+  // hadd compareLite_Run3.root compareLite_2022CD.root compareLite_2022E.root compareLite_2022FG.root compareLite_2023Cv123.root compareLite_2023Cv4.root compareLite_2023D.root
+  drawCompareLite("Run3");
+
+
+  drawCompareLiteIOVs();
 }
