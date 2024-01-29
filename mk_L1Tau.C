@@ -13,7 +13,7 @@ void mk_L1Tau() {
   gROOT->ProcessLine(".L drawL1Tau.C+g");
 
   TChain *c23c = new TChain("Events");
-  //c23c->AddFile("../data/l1tau/Summer22Prompt23/Run2023B-PromptNanoAODv11p9_v1-v1_NANOAOD_taus.root");
+  c23c->AddFile("../data/l1tau/Summer22Prompt23/Run2023B-PromptNanoAODv11p9_v1-v1_NANOAOD_taus.root");
   c23c->AddFile("../data/l1tau/Summer22Prompt23/Run2023C-PromptNanoAODv11p9_v1-v1_NANOAOD_taus.root");
   c23c->AddFile("../data/l1tau/Summer22Prompt23/Run2023C-PromptNanoAODv12_v2-v2_NANOAOD_taus.root");
   c23c->AddFile("../data/l1tau/Summer22Prompt23/Run2023C-PromptNanoAODv12_v2-v4_NANOAOD_taus.root");
@@ -34,7 +34,10 @@ void mk_L1Tau() {
   drawL1Tau("IsoTau26");
 
   drawL1Tau("Jet55");
-  drawL1Tau("Jet90");
+  //drawL1Tau("MET90");
+  drawL1Tau("Jet130");
+  //drawL1Tau("IsoTau75");
+  drawL1Tau("IsoTau77p5");
 
   // These cannot be reliably estimated from tag-and-probe sample
   // L1_ETMHF90 starts firing too often when L1Jet>90

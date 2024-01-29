@@ -34,12 +34,23 @@ void drawL1Tau(string path = "IsoTau34") {
 
   TProfile *p1c(0), *p2c(0), *p1d(0), *p2d(0);
   const char *cp = path.c_str();
-  if (path=="IsoTau34") {
+  if (path=="Jet") {
+    p1c = (TProfile*)fc->Get("p1prejet"); assert(p1c);
+    p2c = (TProfile*)fc->Get("p2prejet"); assert(p2c);
+    p1d = (TProfile*)fd->Get("p1prejet"); assert(p1d);
+    p2d = (TProfile*)fd->Get("p2prejet"); assert(p2d);  
+  }
+  else if (path=="IsoTau") {
+    p1c = (TProfile*)fc->Get("p1pretau"); assert(p1c);
+    p2c = (TProfile*)fc->Get("p2pretau"); assert(p2c);
+    p1d = (TProfile*)fd->Get("p1pretau"); assert(p1d);
+    p2d = (TProfile*)fd->Get("p2pretau"); assert(p2d);  
+  }
+  else if (path=="IsoTau34") {
     p1c = (TProfile*)fc->Get("p1prew"); assert(p1c);
     p2c = (TProfile*)fc->Get("p2prew2"); assert(p2c);
     p1d = (TProfile*)fd->Get("p1prew"); assert(p1d);
-    p2d = (TProfile*)fd->Get("p2prew2"); assert(p2d);
-  
+    p2d = (TProfile*)fd->Get("p2prew2"); assert(p2d);  
   }
   else if (path=="IsoTau32") {
     p1c = (TProfile*)fc->Get("p1pre32"); assert(p1c);
@@ -58,6 +69,30 @@ void drawL1Tau(string path = "IsoTau34") {
     p2c = (TProfile*)fc->Get("p2pre55"); assert(p2c);
     p1d = (TProfile*)fd->Get("p1pre55"); assert(p1d);
     p2d = (TProfile*)fd->Get("p2pre55"); assert(p2d);
+  }
+  else if (path=="MET90") {
+    p1c = (TProfile*)fc->Get("p1pre90h"); assert(p1c);
+    p2c = (TProfile*)fc->Get("p2pre90h"); assert(p2c);
+    p1d = (TProfile*)fd->Get("p1pre90h"); assert(p1d);
+    p2d = (TProfile*)fd->Get("p2pre90h"); assert(p2d);
+  }
+  else if (path=="IsoTau75") {
+    p1c = (TProfile*)fc->Get("p1pre75t"); assert(p1c);
+    p2c = (TProfile*)fc->Get("p2pre75t"); assert(p2c);
+    p1d = (TProfile*)fd->Get("p1pre75t"); assert(p1d);
+    p2d = (TProfile*)fd->Get("p2pre75t"); assert(p2d);
+  }
+  else if (path=="IsoTau77p5") {
+    p1c = (TProfile*)fc->Get("p1pre77p5t"); assert(p1c);
+    p2c = (TProfile*)fc->Get("p2pre77p5t"); assert(p2c);
+    p1d = (TProfile*)fd->Get("p1pre77p5t"); assert(p1d);
+    p2d = (TProfile*)fd->Get("p2pre77p5t"); assert(p2d);
+  }
+  else if (path=="Jet130") {
+    p1c = (TProfile*)fc->Get("p1pre130"); assert(p1c);
+    p2c = (TProfile*)fc->Get("p2pre130"); assert(p2c);
+    p1d = (TProfile*)fd->Get("p1pre130"); assert(p1d);
+    p2d = (TProfile*)fd->Get("p2pre130"); assert(p2d);
   }
   else if (path=="Jet110") {
     p1c = (TProfile*)fc->Get("p1pre110"); assert(p1c);

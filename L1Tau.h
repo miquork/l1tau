@@ -42,6 +42,13 @@ public :
    Float_t         L1Jet_phi[nMaxL1Jet];   //[nL1Jet]
    Float_t         L1Jet_pt[nMaxL1Jet];   //[nL1Jet]
 
+  static const int nMaxL1EtSum = 100;
+   Int_t           nL1EtSum;
+   Short_t         L1EtSum_bx[nMaxL1EtSum];   //[nL1EtSum]
+   Int_t           L1EtSum_etSumType[nMaxL1EtSum];   //[nL1EtSum]
+   Float_t         L1EtSum_phi[nMaxL1EtSum];   //[nL1EtSum]
+   Float_t         L1EtSum_pt[nMaxL1EtSum];   //[nL1EtSum]
+  
   static const int nMaxJet = 200;
    Int_t           nJet;
    Float_t         Jet_eta[nMaxJet];   //[nJet]
@@ -53,13 +60,19 @@ public :
    UChar_t         Jet_jetId[nMaxJet];   //[nJet]
    UChar_t         Jet_nConstituents[nMaxJet];   //[nJet]
   //Float_t         Jet_rawFactor[nMaxJet];   //[nJet]
-
+   vector<float>   *Jet_rawFactor;
+  
    Bool_t          HLT_PFJet500;
    UInt_t          run;
    UInt_t          luminosityBlock;
    ULong64_t       event;
    UInt_t          bunchCrossing;
 
+   Bool_t          Flag_Run3;
+   Bool_t          L1_UnprefireableEvent;
+   Bool_t          L1_UnprefireableBX1;
+   Bool_t          L1_Prefireable;
+  
    // List of branches
    TBranch        *b_nL1Tau;   //!
    TBranch        *b_L1Tau_hwIso;   //!
@@ -74,6 +87,12 @@ public :
    TBranch        *b_L1Jet_phi;   //!
    TBranch        *b_L1Jet_pt;   //!
 
+   TBranch        *b_nL1EtSum;   //!
+   TBranch        *b_L1EtSum_bx;   //!
+   TBranch        *b_L1EtSum_etSumType;   //!
+   TBranch        *b_L1EtSum_phi;   //!
+   TBranch        *b_L1EtSum_pt;   //!
+  
    TBranch        *b_nJet;   //!
    TBranch        *b_Jet_eta;   //!
    TBranch        *b_Jet_phi;   //!
@@ -81,13 +100,16 @@ public :
    TBranch        *b_Jet_mass;   //!
    TBranch        *b_Jet_jetId;   //!
    TBranch        *b_Jet_nConstituents;   //!
-  //TBranch        *b_Jet_rawFactor;   //!
+   TBranch        *b_Jet_rawFactor;   //!
 
    TBranch        *b_HLT_PFJet500;   //!
    TBranch        *b_run;   //!
    TBranch        *b_luminosityBlock;   //!
    TBranch        *b_event;   //!
    TBranch        *b_bunchCrossing;   //!
+
+   TBranch        *b_Flag_Run3;   //!
+   TBranch        *b_L1_UnprefireableEvent;   //!
 
   L1Tau(TTree *tree=0, string name="X");
    virtual ~L1Tau();
@@ -175,6 +197,12 @@ void L1Tau::Init(TTree *tree)
    fChain->SetBranchAddress("L1Jet_phi", L1Jet_phi, &b_L1Jet_phi);
    fChain->SetBranchAddress("L1Jet_pt", L1Jet_pt, &b_L1Jet_pt);
 
+   fChain->SetBranchAddress("nL1EtSum", &nL1EtSum, &b_nL1EtSum);
+   fChain->SetBranchAddress("L1EtSum_bx", L1EtSum_bx, &b_L1EtSum_bx);
+   fChain->SetBranchAddress("L1EtSum_etSumType", L1EtSum_etSumType, &b_L1EtSum_etSumType);
+   fChain->SetBranchAddress("L1EtSum_phi", L1EtSum_phi, &b_L1EtSum_phi);
+   fChain->SetBranchAddress("L1EtSum_pt", L1EtSum_pt, &b_L1EtSum_pt);
+   
    fChain->SetBranchAddress("nJet", &nJet, &b_nJet);
    fChain->SetBranchAddress("Jet_eta", Jet_eta, &b_Jet_eta);
    fChain->SetBranchAddress("Jet_phi", Jet_phi, &b_Jet_phi);
@@ -184,12 +212,18 @@ void L1Tau::Init(TTree *tree)
    fChain->SetBranchAddress("Jet_jetId", Jet_jetId, &b_Jet_jetId);
    fChain->SetBranchAddress("Jet_nConstituents", Jet_nConstituents, &b_Jet_nConstituents);
    //fChain->SetBranchAddress("Jet_rawFactor", Jet_rawFactor, &b_Jet_rawFactor);
-
+   fChain->SetBranchAddress("Jet_rawFactor", &Jet_rawFactor, &b_Jet_rawFactor);
+   
    fChain->SetBranchAddress("HLT_PFJet500", &HLT_PFJet500, &b_HLT_PFJet500);
    fChain->SetBranchAddress("run", &run, &b_run);
    fChain->SetBranchAddress("luminosityBlock", &luminosityBlock, &b_luminosityBlock);
    fChain->SetBranchAddress("event", &event, &b_event);
    fChain->SetBranchAddress("bunchCrossing", &bunchCrossing, &b_bunchCrossing);
+
+   fChain->SetBranchAddress("Flag_Run3", &Flag_Run3, &b_Flag_Run3);
+   fChain->SetBranchAddress("L1_UnprefireableEvent", &L1_UnprefireableEvent, &b_L1_UnprefireableEvent);
+
+   
    Notify();
 }
 
